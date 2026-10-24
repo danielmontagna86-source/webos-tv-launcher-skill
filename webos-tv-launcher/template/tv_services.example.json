@@ -1,0 +1,8 @@
+{
+  "checks": [
+    {"name": "Docker stack", "type": "docker", "prefix": "myproject"},
+    {"name": "Ollama", "type": "port", "host": "127.0.0.1", "port": 11434},
+    {"name": "Home Assistant", "type": "port", "host": "192.168.1.10", "port": 8123},
+    {"name": "Meu app", "type": "process", "image": "MeuApp.exe"}
+  ]
+}

@@ -1,0 +1,472 @@
+/*
+ * webOS renders web apps at 1920x1080. Written for webOS 5 (Chrome 68):
+ * no flex `gap`, no `inset`, no `aspect-ratio`. Use margins and top/right/bottom/left.
+ *
+ * Theme: green + white (football club colours). To change, edit the THEME block below:
+ * the background gradient, the stripes and the tint colours.
+ */
+
+@font-face {
+  font-family: 'Outfit';
+  src: url('fonts/outfit.ttf') format('truetype');
+  font-weight: 100 900;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: #021a0c;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  cursor: default;
+}
+
+/* ---- THEME: background ----------------------------------------------------------------------- */
+
+body {
+  background:
+    radial-gradient(ellipse 1500px 1100px at 22% 12%, #0f6b3a 0%, #06401f 52%, #021a0c 100%);
+}
+
+/* Diagonal bands with thin white pinstripes, on the right side. */
+body::before {
+  content: '';
+  position: absolute;
+  top: -200px;
+  right: -260px;
+  width: 1100px;
+  height: 1500px;
+  transform: rotate(28deg);
+  z-index: -1;
+  background: repeating-linear-gradient(90deg,
+    rgba(16, 110, 58, 0.55) 0, rgba(16, 110, 58, 0.55) 170px,
+    rgba(255, 255, 255, 0.22) 170px, rgba(255, 255, 255, 0.22) 184px,
+    transparent 184px, transparent 260px);
+  pointer-events: none;
+}
+
+/* Darker band at the bottom so the tile rows stand out. */
+body::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 420px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(2, 26, 12, 0) 0%, rgba(2, 26, 12, 0.7) 45%, rgba(2, 26, 12, 0.85) 100%);
+  pointer-events: none;
+}
+
+/* Photo of the day (optional PC service) under a tint in the theme colour. */
+#bgPhoto {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1200ms ease;
+}
+
+#bgTint {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: -1;
+  display: none;
+  background: linear-gradient(180deg, rgba(2, 30, 14, 0.78) 0%, rgba(2, 30, 14, 0.45) 38%,
+    rgba(2, 26, 12, 0.72) 62%, rgba(2, 20, 10, 0.92) 100%);
+}
+
+body.photo #bgPhoto { opacity: 1; }
+body.photo #bgTint { display: block; }
+body.photo::before { display: none; }
+
+/* ---- ambient glow ---------------------------------------------------------------------------- */
+
+.ambient {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  opacity: 0;
+  transition: opacity 600ms ease;
+  pointer-events: none;
+}
+
+#hero {
+  display: none;
+  position: absolute;
+  left: 136px;
+  font-size: 64px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 260ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+
+/* ---- header ---------------------------------------------------------------------------------- */
+
+header {
+  position: absolute;
+  top: 52px;
+  left: 112px;
+  right: 112px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 3;
+  transition: opacity 300ms ease, transform 360ms cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+
+body.scrolled header {
+  opacity: 0;
+  transform: translateY(-48px);
+  pointer-events: none;
+}
+
+#greeting {
+  margin-left: 8px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+#timeRow { display: flex; align-items: flex-end; }
+
+#clock {
+  font-size: 96px;
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+#ampm {
+  margin: 0 0 16px 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 30px;
+  font-weight: 500;
+}
+
+.divider {
+  width: 2px;
+  height: 52px;
+  margin: 0 32px 16px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#date {
+  margin-bottom: 18px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: pre;
+}
+
+#rightBlock { display: flex; flex-direction: column; align-items: flex-end; }
+
+#topButtons { display: flex; margin-top: 28px; }
+
+/* Status chips under the pills (optional PC service). */
+#statusRow { display: flex; margin-top: 14px; min-height: 34px; }
+
+.chip {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+  padding: 4px 16px 4px 12px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 19px;
+  white-space: nowrap;
+}
+
+.chip i {
+  display: block;
+  width: 12px;
+  height: 12px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.8);
+}
+
+.chip.down i { background: #f87171; box-shadow: 0 0 8px rgba(248, 113, 113, 0.8); }
+.chip.down { color: #fecaca; }
+
+.pill {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  margin-left: 16px;
+  padding: 0 30px 0 24px;
+  border-radius: 32px;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+  color: #fff;
+  font-size: 24px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease, transform 200ms ease;
+}
+
+.pill svg { width: 32px; height: 32px; margin-right: 12px; fill: currentColor; }
+
+.pill.focused {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: transparent;
+  color: #000;
+  transform: scale(1.04);
+}
+
+/* ---- info row: weather, match, news ---------------------------------------------------------- */
+
+#infoRow {
+  position: absolute;
+  top: 204px;
+  left: 112px;
+  right: 112px;
+  height: 272px;
+  display: flex;
+  z-index: 2;
+  transition: opacity 300ms ease, transform 360ms cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+
+body.scrolled #infoRow { opacity: 0; transform: translateY(-48px); pointer-events: none; }
+
+.infoCard {
+  height: 100%;
+  margin-left: 24px;
+  padding: 22px 28px;
+  border-radius: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.30);
+  overflow: hidden;
+}
+
+.infoCard:first-child { margin-left: 0; }
+
+#weather { width: 440px; }
+
+#wxMain { display: flex; align-items: center; }
+
+#wxIcon svg { display: block; width: 64px; height: 64px; margin-right: 12px; }
+
+#wxTemp { font-size: 72px; font-weight: 300; letter-spacing: -0.03em; line-height: 1; }
+
+#wxInfo { margin-left: 18px; min-width: 0; }
+
+#wxDesc { font-size: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+#wxRange { margin-top: 4px; color: rgba(255, 255, 255, 0.6); font-size: 19px; white-space: nowrap; }
+
+#wxDays {
+  display: flex;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.wxDay { -webkit-box-flex: 1; flex: 1; text-align: center; }
+.wxDay b { display: block; color: rgba(255, 255, 255, 0.6); font-size: 17px; font-weight: 500; text-transform: uppercase; }
+.wxDay svg { display: block; width: 34px; height: 34px; margin: 4px auto; }
+.wxDay span { font-size: 18px; }
+.wxDay span.min { color: rgba(255, 255, 255, 0.5); margin-left: 6px; }
+
+#game { width: 400px; }
+
+#gameTeams { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.gTeam { width: 130px; text-align: center; }
+.gTeam img { display: block; width: 64px; height: 64px; margin: 0 auto 6px; }
+.gTeam span { display: block; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#gMid { color: rgba(255, 255, 255, 0.55); font-size: 30px; font-weight: 300; text-align: center; }
+#gMid.score { color: #fff; font-size: 52px; font-weight: 400; letter-spacing: 0.04em; }
+#gWhen { margin-top: 10px; font-size: 22px; text-align: center; }
+#gCount { margin-top: 2px; color: #8fe3a8; font-size: 20px; text-align: center; }
+#gCount.live { color: #f87171; font-weight: 600; letter-spacing: 0.08em; }
+#gVenue { margin-top: 2px; color: rgba(255, 255, 255, 0.45); font-size: 17px; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.newsCol { -webkit-box-flex: 1; flex: 1; min-width: 0; }
+.newsWait { color: rgba(255, 255, 255, 0.45); font-size: 22px; }
+
+.newsTag {
+  margin-bottom: 12px;
+  color: #8fe3a8;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.newsList { height: 178px; overflow: hidden; }
+.newsItem { margin-bottom: 14px; transition: opacity 500ms ease; }
+
+.newsTitle {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 23px;
+  line-height: 1.25;
+}
+
+.newsSrc { margin-top: 4px; color: rgba(255, 255, 255, 0.5); font-size: 18px; }
+.newsList.fade .newsItem { opacity: 0; }
+
+/* ---- grid ------------------------------------------------------------------------------------ */
+
+#viewport { position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; }
+
+#stage {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  transition: transform 420ms cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+
+#dockBand {
+  position: absolute;
+  border-radius: 40px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.item {
+  position: absolute;
+  width: 210px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 400ms ease, transform 400ms cubic-bezier(0.2, 0.8, 0.3, 1),
+    left 320ms cubic-bezier(0.25, 0.8, 0.3, 1), top 320ms cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+
+.item.shown { opacity: 1; transform: none; }
+.item.moving { z-index: 2; }
+
+.item.moving .card {
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+  animation: wiggle 240ms ease-in-out infinite alternate;
+}
+
+@keyframes wiggle {
+  from { transform: scale(1.1) rotate(-1.2deg); }
+  to { transform: scale(1.1) rotate(1.2deg); }
+}
+
+body.editing #glass { opacity: 0 !important; }
+
+.card {
+  position: relative;
+  width: 210px;
+  height: 118px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #1c1c1e;
+  transition: transform 180ms ease;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  border-radius: 20px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.item.focused .card { transform: scale(1.1); transition: transform 260ms cubic-bezier(0.34, 1.6, 0.5, 1); }
+
+.card img { position: absolute; top: 0; left: 50%; height: 100%; transform: translateX(-50%); }
+.card.glyph img { top: 50%; height: 62%; transform: translate(-50%, -50%); }
+
+.name {
+  height: 32px;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 22px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.item.focused .name { opacity: 1; transform: translateY(8px); }
+
+#glass {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.07));
+  box-shadow: 0 0 4px 2px rgba(255, 255, 255, 0.19), 0 0 12px 4px rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 520ms cubic-bezier(0.3, 1.35, 0.45, 1);
+}
+
+#glass::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+}
+
+/* ---- inputs dropdown ------------------------------------------------------------------------- */
+
+#inputsPanel {
+  position: absolute;
+  z-index: 5;
+  padding: 16px;
+  border-radius: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, rgba(42, 42, 46, 0.95), rgba(22, 22, 24, 0.96));
+  transform-origin: top;
+  transition: opacity 220ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+#inputsPanel.hidden { opacity: 0; transform: translateY(-16px) scaleY(0.92); pointer-events: none; }
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  height: 84px;
+  padding: 0 24px;
+  border-radius: 24px;
+  font-size: 30px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.inputRow svg { width: 40px; height: 40px; margin-right: 20px; fill: currentColor; }
+.inputRow.focused { background: rgba(255, 255, 255, 0.96); color: #000; }
+.separator { height: 2px; margin: 12px 24px; background: rgba(255, 255, 255, 0.12); }
+
+#toast {
+  position: absolute;
+  left: 50%;
+  bottom: 80px;
+  padding: 20px 40px;
+  border-radius: 40px;
+  background: rgba(40, 40, 44, 0.95);
+  font-size: 28px;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 200ms ease;
+  z-index: 6;
+}
+
+#toast.shown { opacity: 1; }
